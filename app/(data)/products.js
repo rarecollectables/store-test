@@ -7,7 +7,7 @@ const PRODUCTS = [
     price: '£65', 
     category: 'Bracelets', 
     image: require('../../assets/images/products/1-1-bracelets.avif'),
-    tags: ['gift for her', 'womens gifts', 'birthday gift'],
+    tags: ['gift for her', 'womens gifts', 'birthday gift', '20-off'],
     short_description: 'Elegant angel wings bracelet, ideal as a thoughtful gift for her on any special occasion.',
     gift_occasion: ['birthday', 'anniversary', 'valentines']
   },
@@ -18,7 +18,7 @@ const PRODUCTS = [
     category: 'Earrings', 
     image: require('../../assets/images/products/1-1-earrings.avif'), 
     shipping: ['next_day'],
-    tags: ['gift for her', 'womens gifts', 'luxury gift'],
+    tags: ['gift for her', 'womens gifts', 'luxury gift', '40-off'],
     short_description: 'Stunning fringe earrings that make the perfect gift for the special woman in your life.',
     gift_occasion: ['birthday', 'anniversary', 'christmas']
   },

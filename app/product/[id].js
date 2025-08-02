@@ -102,8 +102,8 @@ export default function ProductDetail() {
     itemVisiblePercentThreshold: 50,
   };
 
-  // Calculate regular price based on product ID (some 20% off, some 40% off)
-  const calculateRegularPrice = (salesPrice, productId) => {
+  // Calculate regular price based on product tags (some 20% off, some 40% off)
+  const calculateRegularPrice = (salesPrice, product) => {
     const numericPrice = typeof salesPrice === 'number' ? salesPrice : 
                         typeof salesPrice === 'string' ? parseFloat(salesPrice.replace(/[£\s]/g, '')) : 0;
     
@@ -111,18 +111,33 @@ export default function ProductDetail() {
       return 'Price N/A';
     }
     
-    // Use product ID to determine discount rate
-    // Products with even IDs get 40% off, odd IDs get 20% off
-    const discountMultiplier = productId % 2 === 0 ? 1.67 : 1.25; // ~40% vs 20% discount
+    // Check product tags for discount information
+    const tags = product?.tags || [];
+    let discountMultiplier = 1; // No discount by default
+    
+    if (tags.includes('40-off')) {
+      discountMultiplier = 1.67; // ~40% discount
+    } else if (tags.includes('20-off')) {
+      discountMultiplier = 1.25; // 20% discount
+    } else {
+      // No discount, return the same price
+      return `£${numericPrice.toFixed(2)}`;
+    }
     
     // Regular price calculation
     const regularPrice = Math.round((numericPrice * discountMultiplier) * 100) / 100;
     return `£${regularPrice.toFixed(2)}`;
   };
   
-  // Get discount percentage based on product ID
-  const getDiscountPercentage = (productId) => {
-    return productId % 2 === 0 ? '40%' : '20%';
+  // Get discount percentage based on product tags
+  const getDiscountPercentage = (product) => {
+    const tags = product?.tags || [];
+    if (tags.includes('40-off')) {
+      return '40%';
+    } else if (tags.includes('20-off')) {
+      return '20%';
+    }
+    return null; // No discount
   };
 
   const [zoomVisible, setZoomVisible] = useState(false);
@@ -602,7 +617,9 @@ export default function ProductDetail() {
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 12, flexWrap: 'wrap', width: '100%' }}>
                 <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={[styles.regularPrice]}>Regular Price: {calculateRegularPrice(product?.price, product?.id)}</Text>
+                    {getDiscountPercentage(product) && (
+                      <Text style={[styles.regularPrice]}>Regular Price: {calculateRegularPrice(product?.price, product)}</Text>
+                    )}
                   </View>
                   <Text style={[styles.salesPrice, { fontSize: 22, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.gold, color: colors.white, borderWidth: 1, borderColor: colors.softGoldBorder, ...desktopPrice }]}>{product?.price}</Text>
                 </View>

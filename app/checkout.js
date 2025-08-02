@@ -745,7 +745,7 @@ export default function CheckoutScreen() {
 
       // 1. Calculate pricing
       const subtotal = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + calculateDiscountedPrice(item) * item.quantity,
         0,
       );
       const discountedSubtotal = Math.max(0, subtotal - (discountAmount || 0));
@@ -2402,12 +2402,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   mobileCouponButton: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.gold, // Changed to blue for better visibility
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    minWidth: 80,
   },
   mobileCouponButtonText: {
     color: '#fff',

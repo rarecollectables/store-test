@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, Text, ScrollView, TextInput, FlatList } from 'react-native';
+import { View, StyleSheet, Pressable, Text, ScrollView, TextInput, FlatList, Platform } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { colors, fontFamily, spacing, borderRadius, shadows } from '../../theme';
 import { useStore } from '../../context/store';
@@ -57,7 +57,7 @@ export default function ShopScreen() {
         eventType: 'search', 
         searchQuery: searchQuery.trim(),
         searchSource: 'shop_page',
-        deviceType: Platform.OS === 'web' && window.innerWidth >= 768 ? 'desktop' : 'mobile'
+        deviceType: Platform.OS === 'web' ? (window.innerWidth >= 768 ? 'desktop' : 'mobile') : 'mobile'
       });
       
       // Use router.replace instead of push to reset the URL completely
@@ -150,6 +150,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textDark,
     fontFamily: fontFamily.sans,
+    outlineStyle: 'none', // Remove focus outline
+    outlineWidth: 0,
+    WebkitTapHighlightColor: 'transparent', // Remove tap highlight on mobile
+    WebkitAppearance: 'none', // Remove default styling on iOS
+    WebkitOutline: 'none', // Safari specific
   },
   searchButton: {
     backgroundColor: colors.gold,

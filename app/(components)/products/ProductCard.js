@@ -532,33 +532,50 @@ export default function ProductCard({item, cardWidth, disableImageCycling}) {
     router.push(`/product/${item.id}`);
   };
 
-  const parsePrice = price => {
-    if (typeof price === 'number') return price;
-    if (typeof price === 'string') {
-      const cleaned = price.replace(/[^\d.,-]/g, '').replace(/,/g, '.');
-      return parseFloat(cleaned) || 0;
-    }
-    return 0;
-  };
-
-  const formatPrice = price => {
+  const parsePrice = (price) => {
+    if (!price) return 0;
     const numeric =
       typeof price === 'number'
         ? price
-        : parseFloat(price.replace(/[£\s]/g, ''));
-    return isNaN(numeric) ? 'Price N/A' : `$${numeric.toFixed(2)}`;
+        : typeof price === 'string'
+          ? parseFloat(price.replace(/[£\s]/g, ''))
+          : 0;
+    return isNaN(numeric) ? 0 : numeric;
   };
 
-  const calculateRegularPrice = (salesPrice, productId) => {
+  const formatPrice = (price) => {
+    if (!price && price !== 0) return 'Price N/A';
+    const numeric =
+      typeof price === 'number'
+        ? price
+        : typeof price === 'string'
+          ? parseFloat(price.replace(/[£\s]/g, ''))
+          : 0;
+    return isNaN(numeric) ? 'Price N/A' : `£${numeric.toFixed(2)}`;
+  };
+
+  const calculateRegularPrice = (salesPrice, product) => {
     const price = parsePrice(salesPrice);
-    const multiplier = productId % 2 === 0 ? 1.67 : 1.25;
+    const tags = product?.tags || [];
+    
+    let multiplier = 1; // No discount by default
+    
+    if (tags.includes('40-off')) {
+      multiplier = 1.67; // ~40% discount
+    } else if (tags.includes('20-off')) {
+      multiplier = 1.25; // 20% discount
+    } else {
+      // No discount
+      return null;
+    }
+    
     return Math.round(price * multiplier * 100) / 100;
   };
   // console.log('ProductCard: item', item);
 
   const getDiscountPercentage = () => {
     const salePrice = parsePrice(item.price);
-    const regularPrice = calculateRegularPrice(item.price, item.id);
+    const regularPrice = calculateRegularPrice(item.price, item);
 
     if (!regularPrice || !salePrice || regularPrice <= salePrice) return 0;
 
@@ -645,7 +662,7 @@ export default function ProductCard({item, cardWidth, disableImageCycling}) {
 
         <View style={styles.priceContainer}>
           <Text style={styles.regularPrice}>
-            {formatPrice(calculateRegularPrice(item.price, item.id))}
+            {formatPrice(calculateRegularPrice(item.price, item))}
           </Text>
           <Text style={styles.salesPrice}>{formatPrice(item.price)}</Text>
         </View>

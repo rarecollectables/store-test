@@ -1383,6 +1383,11 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.sans,
     fontSize: 14,
     color: colors.text,
+    outlineStyle: 'none', // Remove focus outline
+    outlineWidth: 0,
+    WebkitTapHighlightColor: 'transparent', // Remove tap highlight on mobile
+    WebkitAppearance: 'none', // Remove default styling on iOS
+    WebkitOutline: 'none', // Safari specific
     backgroundColor: colors.white,
     textAlign: 'center',
   },
