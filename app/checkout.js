@@ -116,20 +116,8 @@ export default function CheckoutScreen() {
   const router = useRouter();
   // Coupon state (must be defined before use)
   const [coupon, setCoupon] = useState('');
-  const [localCoupon, setLocalCoupon] = useState(''); // Local state to prevent re-renders
   const [couponStatus, setCouponStatus] = useState(null); // { valid: bool, discount: {type, value}, error }
   const [applyingCoupon, setApplyingCoupon] = useState(false);
-  
-  // Handle coupon input changes without causing full re-renders
-  const handleCouponChange = (text) => {
-    setLocalCoupon(text);
-  };
-  
-  // Update the actual coupon state only when applying
-  const handleApplyCouponClick = () => {
-    setCoupon(localCoupon);
-    handleApplyCoupon(localCoupon);
-  };
 
   const {cart, removeFromCart} = useStore();
   const [contact, setContact] = useState({name: '', email: ''});
@@ -478,16 +466,15 @@ export default function CheckoutScreen() {
   };
 
   // Coupon validation handler
-  const handleApplyCoupon = async (couponCode) => {
-    const codeToUse = couponCode || coupon;
-    if (!codeToUse) return;
+  const handleApplyCoupon = async () => {
+    if (!coupon) return;
     setApplyingCoupon(true);
     setCouponStatus(null);
     try {
       const response = await fetch('/.netlify/functions/validate-coupon', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({coupon: codeToUse}),
+        body: JSON.stringify({coupon}),
       });
       const data = await response.json();
 
@@ -1386,6 +1373,119 @@ export default function CheckoutScreen() {
           <Text style={styles.trustBadgeText}>Fast Dispatch</Text>
         </View>
       </View>
+      
+      {/* Mobile Order Summary - Collapsible */}
+      {!isDesktop && (
+        <CollapsibleSection
+          title={`Order Summary (${cart.length} ${cart.length === 1 ? 'item' : 'items'}) - £${total.toFixed(2)}`}
+          initiallyCollapsed={true}>
+          <View style={styles.mobileSummaryContainer}>
+            {/* Cart Items Summary */}
+            <View style={styles.cartItemsContainer}>
+              {cart.map((item, index) => (
+                <View
+                  key={item.id}
+                  style={[
+                    styles.cartItemRow,
+                    index < cart.length - 1 && styles.cartItemBorder,
+                  ]}>
+                  <View style={styles.cartItemImageContainer}>
+                    <Image 
+                      source={{ uri: item.image }} 
+                      style={styles.cartItemImage} 
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View style={styles.cartItemInfo}>
+                    <Text style={styles.cartItemName}>
+                      {item.name}
+                    </Text>
+                    <Text style={styles.cartItemQuantity}>
+                      Qty: {item.quantity}
+                    </Text>
+                  </View>
+                  <Text style={styles.cartItemPrice}>
+                    £{(item.price * item.quantity).toFixed(2)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.summaryDivider} />
+            
+            {/* Price Summary */}
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>£{subtotal.toFixed(2)}</Text>
+            </View>
+            
+            {couponStatus?.valid && discountAmount > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Discount</Text>
+                <Text style={styles.summaryValue}>-£{discountAmount.toFixed(2)}</Text>
+              </View>
+            )}
+            
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Shipping</Text>
+              <Text style={styles.summaryValue}>£{shippingCost.toFixed(2)}</Text>
+            </View>
+            
+            <View style={[styles.summaryRow, styles.totalRow]}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>£{total.toFixed(2)}</Text>
+            </View>
+            
+            {/* Discount Code Field */}
+            <View style={styles.mobileCouponContainer}>
+              <Text style={styles.mobileCouponLabel}>Have a discount code?</Text>
+              <View style={styles.mobileCouponInputRow}>
+                <TextInput
+                  style={styles.mobileCouponInput}
+                  placeholder="Enter coupon code"
+                  value={coupon}
+                  onChangeText={setCoupon}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  placeholderTextColor={colors.platinum}
+                />
+                <Pressable
+                  style={({pressed}) => [
+                    styles.mobileCouponButton,
+                    applyingCoupon && styles.checkoutButtonDisabled,
+                    pressed && !applyingCoupon && {opacity: 0.93},
+                  ]}
+                  onPress={handleApplyCoupon}
+                  disabled={applyingCoupon}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apply Coupon">
+                  <Text style={styles.mobileCouponButtonText}>
+                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                  </Text>
+                </Pressable>
+              </View>
+              
+              {/* Coupon Status Message */}
+              {couponStatus && (
+                <Text 
+                  style={[
+                    styles.mobileCouponStatus,
+                    couponStatus.valid ? styles.mobileCouponValid : styles.mobileCouponError
+                  ]}
+                >
+                  {couponStatus.valid 
+                    ? `Coupon applied: ${coupon.toUpperCase()} ${couponStatus.discount.type === 'percent' 
+                      ? `(${couponStatus.discount.value}% off)` 
+                      : `(-£${couponStatus.discount.value.toFixed(2)})`}`
+                    : couponStatus.error
+                  }
+                </Text>
+              )}
+            </View>
+          </View>
+        </CollapsibleSection>
+      )}
+      
       {/* <View style={[styles.leftColumn, isDesktop && styles.leftColumnDesktop]}>
         Order Reservation Timer
         <View style={styles.reservationTimerContainer}>
@@ -1816,8 +1916,15 @@ export default function CheckoutScreen() {
                   styles.cartItemRow,
                   index < cart.length - 1 && styles.cartItemBorder,
                 ]}>
+                <View style={styles.cartItemImageContainer}>
+                  <Image 
+                    source={{ uri: item.image }} 
+                    style={styles.cartItemImage} 
+                    resizeMode="cover"
+                  />
+                </View>
                 <View style={styles.cartItemInfo}>
-                  <Text style={styles.cartItemName} numberOfLines={1}>
+                  <Text style={styles.cartItemName}>
                     {item.name}
                   </Text>
                   <Text style={styles.cartItemQuantity}>
@@ -1842,8 +1949,8 @@ export default function CheckoutScreen() {
             <TextInput
               style={[styles.input, {flex: 1, marginRight: 12, width: '50%'}]}
               placeholder="Enter coupon code"
-              value={localCoupon}
-              onChangeText={handleCouponChange}
+              value={coupon}
+              onChangeText={setCoupon}
               autoCapitalize="characters"
               autoCorrect={false}
               placeholderTextColor={colors.platinum}
@@ -2226,7 +2333,19 @@ const styles = StyleSheet.create({
   cartItemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  cartItemImageContainer: {
+    width: 50,
+    height: 50,
+    marginRight: 12,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  cartItemImage: {
+    width: '100%',
+    height: '100%',
   },
   cartItemBorder: {
     borderBottomWidth: 1,
@@ -2240,6 +2359,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 2,
+    flexWrap: 'wrap',
   },
   cartItemQuantity: {
     fontSize: 13,
@@ -2248,6 +2368,61 @@ const styles = StyleSheet.create({
   cartItemPrice: {
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  mobileSummaryContainer: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  mobileCouponContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#eaeaea',
+  },
+  mobileCouponLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: colors.darkText,
+  },
+  mobileCouponInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  mobileCouponInput: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    backgroundColor: '#fff',
+  },
+  mobileCouponButton: {
+    backgroundColor: colors.black,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mobileCouponButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  mobileCouponStatus: {
+    marginTop: 8,
+    fontSize: 13,
+  },
+  mobileCouponValid: {
+    color: '#2e7d32',
+  },
+  mobileCouponError: {
+    color: '#d32f2f',
   },
   loadingContainer: {
     flex: 1,
@@ -2485,10 +2660,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#222',
+    fontSize: 14,
+    fontWeight: '400',
+    marginBottom: 10,
+    color: '#777',
   },
   sectionTitle: {
     fontSize: 18,
