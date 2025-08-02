@@ -116,8 +116,20 @@ export default function CheckoutScreen() {
   const router = useRouter();
   // Coupon state (must be defined before use)
   const [coupon, setCoupon] = useState('');
+  const [localCoupon, setLocalCoupon] = useState(''); // Local state to prevent re-renders
   const [couponStatus, setCouponStatus] = useState(null); // { valid: bool, discount: {type, value}, error }
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  
+  // Handle coupon input changes without causing full re-renders
+  const handleCouponChange = (text) => {
+    setLocalCoupon(text);
+  };
+  
+  // Update the actual coupon state only when applying
+  const handleApplyCouponClick = () => {
+    setCoupon(localCoupon);
+    handleApplyCoupon(localCoupon);
+  };
 
   const {cart, removeFromCart} = useStore();
   const [contact, setContact] = useState({name: '', email: ''});
@@ -466,15 +478,16 @@ export default function CheckoutScreen() {
   };
 
   // Coupon validation handler
-  const handleApplyCoupon = async () => {
-    if (!coupon) return;
+  const handleApplyCoupon = async (couponCode) => {
+    const codeToUse = couponCode || coupon;
+    if (!codeToUse) return;
     setApplyingCoupon(true);
     setCouponStatus(null);
     try {
       const response = await fetch('/.netlify/functions/validate-coupon', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({coupon}),
+        body: JSON.stringify({coupon: codeToUse}),
       });
       const data = await response.json();
 
@@ -1829,8 +1842,8 @@ export default function CheckoutScreen() {
             <TextInput
               style={[styles.input, {flex: 1, marginRight: 12, width: '50%'}]}
               placeholder="Enter coupon code"
-              value={coupon}
-              onChangeText={setCoupon}
+              value={localCoupon}
+              onChangeText={handleCouponChange}
               autoCapitalize="characters"
               autoCorrect={false}
               placeholderTextColor={colors.platinum}
