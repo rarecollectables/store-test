@@ -171,7 +171,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 exports.handler = async event => {
   const allowedOrigins = [
     'https://rarecollectables1.netlify.app',
-    'https://web-store-test.netlify.app',
+    'https://rarecollectables.co.uk',
     'https://rarecollectables.netlify.app',
     'http://localhost:8081',
     'http://127.0.0.1:8081',

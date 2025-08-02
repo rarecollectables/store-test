@@ -64,7 +64,7 @@ const isProd = process.env.NODE_ENV === 'development';
 
 const NETLIFY_STRIPE_FUNCTION_URL =
   // isProd ?
-  'https://web-store-test.netlify.app/.netlify/functions/create-checkout-session';
+  'https://rarecollectables.co.uk/.netlify/functions/create-checkout-session';
 // :
 // 'http://localhost:4242/create-checkout-session';
 
@@ -72,7 +72,7 @@ const NETLIFY_STRIPE_FUNCTION_URL =
 //   'https://rarecollectables.co.uk/.netlify/functions/create-checkout-session';
 
 const NETLIFY_STRIPE_CREATE_PAYMENT_FUNCTION_URL =
-  'https://web-store-test.netlify.app/.netlify/functions/create-payment-intent';
+  'https://rarecollectables.co.uk/.netlify/functions/create-payment-intent';
 
 // Log Stripe key status for debugging (without revealing the full key)
 console.log('Checking Stripe key sources:');
@@ -196,7 +196,7 @@ export default function CheckoutScreen() {
 
   const NETLIFY_STRIPE_CREATE_PAYMENT_FUNCTION_URL =
     // isProd?
-    'https://web-store-test.netlify.app/.netlify/functions/create-payment-intent';
+    'https://rarecollectables.co.uk/.netlify/functions/create-payment-intent';
   // :
   // 'http://localhost:4242/create-payment-intent';
 
@@ -1134,7 +1134,7 @@ export default function CheckoutScreen() {
           clientSecret,
           elements,
           confirmParams: {
-            // return_url: 'https://web-store-test.netlify.app/checkout-success',
+            // return_url: 'https://rarecollectables.co.uk/checkout-success',
             return_url: `${window.location.origin}/checkout-success`,
           },
           redirect: 'if_required',

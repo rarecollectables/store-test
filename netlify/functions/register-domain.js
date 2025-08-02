@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 exports.handler = async (event, context) => {
   try {
     const paymentMethodDomain = await stripe.paymentMethodDomains.create({
-      domain_name: 'web-store-test.netlify.app', // replace with your actual domain
+      domain_name: 'rarecollectables.co.uk', // updated domain name
     });
 
     return {

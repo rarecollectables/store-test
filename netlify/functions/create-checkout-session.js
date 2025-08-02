@@ -4,7 +4,7 @@
 //   // Handle CORS preflight requests
 //   // Only allow trusted origins (production and local dev)
 //   const allowedOrigins = [
-//     'https://web-store-test.netlify.app',
+//     'https://rarecollectables.co.uk',
 //     'https://rarecollectables1.netlify.app',
 //     'https://rarecollectables.netlify.app',
 //     'http://localhost:8081',
@@ -55,7 +55,7 @@
 //       'http://localhost:8081',
 //       'https://rarecollectables.co.uk',
 //       'https://rarecollectables.netlify.app',
-//       'https://web-store-test.netlify.app',
+//       'https://rarecollectables.co.uk',
 //       'http://127.0.0.1:8081',
 //     ];
 //     const origin = event.headers.origin || event.headers.Origin;
@@ -471,7 +471,7 @@ const Stripe = require('stripe');
 
 exports.handler = async event => {
   const allowedOrigins = [
-    'https://web-store-test.netlify.app',
+    'https://rarecollectables.co.uk',
     'https://rarecollectables1.netlify.app',
     'https://rarecollectables.netlify.app',
     'http://localhost:8081',
